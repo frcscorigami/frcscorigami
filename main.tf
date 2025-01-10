@@ -12,6 +12,10 @@ provider "google" {
   region  = "us-central1" # Set your desired region here
 }
 
+data "google_project" "project" {
+  project_id = "frc-scorigami"
+}
+
 resource "random_id" "default" {
   byte_length = 8
 }
@@ -134,3 +138,102 @@ resource "google_cloud_scheduler_job" "update_job" {
     }
   }
 }
+
+# Create artifact storage bucket
+resource "google_storage_bucket" "frontend_storage" {
+  name                        = "frc-scorigami-frontend"
+  location                    = "US"
+  uniform_bucket_level_access = true
+}
+
+# Create Cloud Run service for frontend
+resource "google_cloud_run_service" "frontend" {
+  name     = "scorigami-frontend"
+  location = "us-central1"
+
+  template {
+    spec {
+      containers {
+        image = "gcr.io/frc-scorigami/frontend:latest"
+        env {
+          name  = "API_URL"
+          value = google_cloudfunctions2_function.function["function-get"].service_config[0].uri
+        }
+      }
+    }
+  }
+
+  traffic {
+    percent         = 100
+    latest_revision = true
+  }
+}
+
+# Allow public access
+resource "google_cloud_run_service_iam_member" "frontend_public" {
+  location = google_cloud_run_service.frontend.location
+  service  = google_cloud_run_service.frontend.name
+  role     = "roles/run.invoker"
+  member   = "allUsers"
+}
+
+# Grant Cloud Build service account access to push images
+resource "google_project_iam_member" "cloud1build_gcr" {
+  project = "frc-scorigami"
+  role    = "roles/storage.admin"
+  member  = "serviceAccount:${data.google_project.project.number}@cloudbuild.gserviceaccount.com"
+}
+
+# # Create Cloud Build trigger
+# resource "google_cloudbuild_trigger" "frontend_build" {
+#   name = "build-frontend"
+
+#   github {
+#     owner = "frcscorigami"
+#     name  = "frcscorigami"
+#     push {
+#       branch = "^main$"
+#     }
+#   }
+
+#   build {
+#     step {
+#       name       = "node:20"
+#       dir        = "apps/frontend"
+#       entrypoint = "npm"
+#       args       = ["install"]
+#     }
+
+#     step {
+#       name       = "node:20"
+#       dir        = "apps/frontend"
+#       entrypoint = "npm"
+#       args       = ["run", "build"]
+#     }
+
+#     step {
+#       name = "gcr.io/cloud-builders/docker"
+#       args = [
+#         "build",
+#         "-t", "gcr.io/frc-scorigami/frontend:$COMMIT_SHA",
+#         "-t", "gcr.io/frc-scorigami/frontend:latest",
+#         "apps/frontend"
+#       ]
+#     }
+
+#     step {
+#       name = "gcr.io/cloud-builders/docker"
+#       args = ["push", "--all-tags", "gcr.io/frc-scorigami/frontend"]
+#     }
+
+#     step {
+#       name = "gcr.io/google.com/cloudsdktool/cloud-sdk"
+#       args = [
+#         "run", "deploy", "scorigami-frontend",
+#         "--image", "gcr.io/frc-scorigami/frontend:$COMMIT_SHA",
+#         "--region", "us-central1",
+#         "--platform", "managed"
+#       ]
+#     }
+#   }
+# }
