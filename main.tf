@@ -184,56 +184,39 @@ resource "google_project_iam_member" "cloud1build_gcr" {
   member  = "serviceAccount:${data.google_project.project.number}@cloudbuild.gserviceaccount.com"
 }
 
-# # Create Cloud Build trigger
-# resource "google_cloudbuild_trigger" "frontend_build" {
-#   name = "build-frontend"
+# Create service account for Cloud Build
+resource "google_service_account" "cloudbuild_sa" {
+  account_id   = "cloudbuild-frontend"
+  display_name = "Cloud Build Frontend"
+}
 
-#   github {
-#     owner = "frcscorigami"
-#     name  = "frcscorigami"
-#     push {
-#       branch = "^main$"
-#     }
-#   }
+# Grant necessary permissions
+resource "google_project_iam_member" "cloudbuild_permissions" {
+  for_each = toset([
+    "roles/run.admin",
+    "roles/storage.admin",
+    "roles/cloudbuild.builds.builder"
+  ])
 
-#   build {
-#     step {
-#       name       = "node:20"
-#       dir        = "apps/frontend"
-#       entrypoint = "npm"
-#       args       = ["install"]
-#     }
+  project = "frc-scorigami"
+  role    = each.key
+  member  = "serviceAccount:${google_service_account.cloudbuild_sa.email}"
+}
 
-#     step {
-#       name       = "node:20"
-#       dir        = "apps/frontend"
-#       entrypoint = "npm"
-#       args       = ["run", "build"]
-#     }
+# Create Cloud Build trigger
+resource "google_cloudbuild_trigger" "frontend_build" {
+  location = "global"
+  name     = "build-frontend"
 
-#     step {
-#       name = "gcr.io/cloud-builders/docker"
-#       args = [
-#         "build",
-#         "-t", "gcr.io/frc-scorigami/frontend:$COMMIT_SHA",
-#         "-t", "gcr.io/frc-scorigami/frontend:latest",
-#         "apps/frontend"
-#       ]
-#     }
+  github {
+    owner = "frcscorigami"
+    name  = "frcscorigami"
+    push {
+      branch = "^main$"
+    }
+  }
 
-#     step {
-#       name = "gcr.io/cloud-builders/docker"
-#       args = ["push", "--all-tags", "gcr.io/frc-scorigami/frontend"]
-#     }
-
-#     step {
-#       name = "gcr.io/google.com/cloudsdktool/cloud-sdk"
-#       args = [
-#         "run", "deploy", "scorigami-frontend",
-#         "--image", "gcr.io/frc-scorigami/frontend:$COMMIT_SHA",
-#         "--region", "us-central1",
-#         "--platform", "managed"
-#       ]
-#     }
-#   }
-# }
+  included_files  = ["apps/frontend/**"]
+  filename        = "apps/frontend/cloudbuild.yaml"
+  service_account = google_service_account.cloudbuild_sa.id
+}
