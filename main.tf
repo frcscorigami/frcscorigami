@@ -195,7 +195,8 @@ resource "google_project_iam_member" "cloudbuild_permissions" {
   for_each = toset([
     "roles/run.admin",
     "roles/storage.admin",
-    "roles/cloudbuild.builds.builder"
+    "roles/cloudbuild.builds.builder",
+    "roles/iam.serviceAccountUser"
   ])
 
   project = "frc-scorigami"
@@ -214,6 +215,10 @@ resource "google_cloudbuild_trigger" "frontend_build" {
     push {
       branch = "^main$"
     }
+  }
+
+  substitutions = {
+    _NEXT_PUBLIC_API_URL = google_cloudfunctions2_function.function["function-get"].service_config[0].uri
   }
 
   included_files  = ["apps/frontend/**"]

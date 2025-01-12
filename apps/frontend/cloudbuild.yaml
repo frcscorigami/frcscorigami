@@ -12,6 +12,8 @@ steps:
   - name: "gcr.io/cloud-builders/docker"
     args:
       - build
+      - "--build-arg"
+      - "NEXT_PUBLIC_API_URL=${_NEXT_PUBLIC_API_URL}"
       - "-t"
       - "gcr.io/frc-scorigami/frontend:$COMMIT_SHA"
       - "-t"
@@ -39,3 +41,4 @@ images:
 
 options:
   logging: CLOUD_LOGGING_ONLY
+  dynamicSubstitutions: true
