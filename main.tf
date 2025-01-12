@@ -126,7 +126,7 @@ resource "google_storage_bucket_iam_member" "update_function_access" {
 # Create scheduler job for update function
 resource "google_cloud_scheduler_job" "update_job" {
   name     = "update-scorigami-data"
-  schedule = "*/30 * * * 5-7" # Every 30 mins on Fri(5),Sat(6),Sun(7)
+  schedule = "0 12 * * 6"
   region   = "us-central1"
 
   http_target {
