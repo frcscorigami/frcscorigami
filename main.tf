@@ -42,6 +42,13 @@ resource "google_storage_bucket_object" "object" {
   source = data.archive_file.default.output_path
 }
 
+# Create logs bucket for Cloud Build
+resource "google_storage_bucket" "cloudbuild_logs" {
+  name                        = "frc-scorigami-cloudbuild-logs"
+  location                    = "US"
+  uniform_bucket_level_access = true
+}
+
 # Create the cloud functions
 resource "google_cloudfunctions2_function" "function" {
   for_each = toset(["function-update", "function-get"])
