@@ -156,7 +156,7 @@ resource "google_cloud_run_service" "frontend" {
       containers {
         image = "gcr.io/frc-scorigami/frontend:latest"
         env {
-          name  = "API_URL"
+          name  = "NEXT_PUBLIC_API_URL"
           value = google_cloudfunctions2_function.function["function-get"].service_config[0].uri
         }
       }
