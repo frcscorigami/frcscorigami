@@ -7,8 +7,21 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { cn, range } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
+import { useMemo, useState } from "react";
+
+export interface ApiResponse {
+  data: Datum[];
+}
+
+export interface Datum {
+  count: number;
+  first: string;
+  last: string;
+  losing_score: number;
+  winning_score: number;
+}
 
 const BASE_API_URL =
   process.env.NEXT_PUBLIC_API_URL ||
@@ -21,7 +34,7 @@ const YEARS = [
 
 const DEFAULT_YEAR = 2024;
 
-async function fetchData(year: number) {
+async function fetchData(year: number): Promise<ApiResponse> {
   const response = await fetch(`${BASE_API_URL}/${year}`);
   if (!response.ok) {
     throw new Error("Network response was not ok");
@@ -36,10 +49,6 @@ export default function Home() {
     queryKey: [year],
     queryFn: () => fetchData(year),
   });
-
-  // if (isLoading) return <p>Loading...</p>;
-
-  // if (error) return <p>Error: {error.message}</p>;
 
   return (
     <div className="">
@@ -56,10 +65,42 @@ export default function Home() {
         </SelectContent>
       </Select>
 
-      <h1>Page</h1>
       {isLoading && <p>Loading...</p>}
       {error && <p>Error: {error.message}</p>}
+
+      {data && <ScorigamiTable data={data.data} />}
       {data && <pre>{JSON.stringify(data, null, 2)}</pre>}
     </div>
+  );
+}
+
+function ScorigamiTable({ data }: { data: Datum[] }) {
+  const maxSize = useMemo(
+    () =>
+      data.reduce((max, { winning_score }) => Math.max(max, winning_score), 0),
+    [data]
+  );
+
+  return (
+    <table>
+      <tbody>
+        {range(1, maxSize + 1).map((a) => (
+          <tr key={`${a}-row`}>
+            {range(1, a + 1).map((b) => (
+              <td
+                key={`${a}-${b}-col`}
+                className={cn("w-1 h-1", {
+                  "bg-green-500": data.some(
+                    (sc) =>
+                      (sc.losing_score === a && sc.winning_score === b) ||
+                      (sc.losing_score === b && sc.winning_score === a)
+                  ),
+                })}
+              ></td>
+            ))}
+          </tr>
+        ))}
+      </tbody>
+    </table>
   );
 }
