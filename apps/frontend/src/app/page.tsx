@@ -11,6 +11,7 @@ import {
 import { cn, range, timeSince } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import { ColumnDef } from "@tanstack/react-table";
+import { PacmanLoader } from "react-spinners";
 import { useMemo, useState } from "react";
 
 export interface ApiResponse {
@@ -74,13 +75,17 @@ export default function Home() {
         </SelectContent>
       </Select>
 
-      {isLoading && <p>Loading...</p>}
+      {isLoading && (
+        <div className="flex justify-center min-h-[90vh] items-center">
+          <PacmanLoader color="#fdff00" speedMultiplier={2} />
+        </div>
+      )}
       {error && <p>Error: {error.message}</p>}
 
       {data && <ScorigamiTable data={data.data} />}
 
       {data && (
-        <div className="flex flex-row gap-4 mt-4 [&>div]:basis-1/2">
+        <div className="flex flex-row flex-wrap md:flex-nowrap gap-4 mt-4 [&>div]:basis-1/2 justify-center">
           <div className="md:max-w-[50%]">
             <div className="text-3xl font-bold text-gray-700">
               Most Recent Scorigamis
@@ -103,8 +108,6 @@ export default function Home() {
           </div>
         </div>
       )}
-
-      {data && <pre>{JSON.stringify(data, null, 2)}</pre>}
     </div>
   );
 }
