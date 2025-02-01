@@ -1,4 +1,5 @@
 import { clsx, type ClassValue } from "clsx";
+import { formatDistanceToNow } from "date-fns";
 import { twMerge } from "tailwind-merge";
 
 export function cn(...inputs: ClassValue[]) {
@@ -26,4 +27,8 @@ export function range(
 
   // Create and fill array
   return Array.from({ length }, (_, i) => start + i * step);
+}
+
+export function timeSince(timestamp: number): string {
+  return formatDistanceToNow(new Date(timestamp * 1000), { addSuffix: true });
 }

@@ -1,5 +1,6 @@
 "use client";
 
+import { DataTable } from "@/components/data-table";
 import {
   Select,
   SelectContent,
@@ -7,8 +8,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { cn, range } from "@/lib/utils";
+import { cn, range, timeSince } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
+import { ColumnDef } from "@tanstack/react-table";
 import { useMemo, useState } from "react";
 
 export interface ApiResponse {
@@ -17,10 +19,15 @@ export interface ApiResponse {
 
 export interface Datum {
   count: number;
-  first: string;
-  last: string;
+  first: MatchInfo;
+  last: MatchInfo;
   losing_score: number;
   winning_score: number;
+}
+
+export interface MatchInfo {
+  actual_time: number | null;
+  key: string;
 }
 
 const BASE_API_URL =
@@ -29,7 +36,7 @@ const BASE_API_URL =
 
 const YEARS = [
   2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012,
-  2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2022, 2023, 2024,
+  2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2022, 2023, 2024, 2025,
 ];
 
 const DEFAULT_YEAR = 2024;
@@ -69,6 +76,11 @@ export default function Home() {
       {error && <p>Error: {error.message}</p>}
 
       {data && <ScorigamiTable data={data.data} />}
+      {data && (
+        <div className="max-w-[50%]">
+          <MostCommonScores data={data.data} />
+        </div>
+      )}
       {data && <pre>{JSON.stringify(data, null, 2)}</pre>}
     </div>
   );
@@ -82,25 +94,84 @@ function ScorigamiTable({ data }: { data: Datum[] }) {
   );
 
   return (
-    <table>
-      <tbody>
-        {range(1, maxSize + 1).map((a) => (
-          <tr key={`${a}-row`}>
-            {range(1, a + 1).map((b) => (
-              <td
-                key={`${a}-${b}-col`}
-                className={cn("w-1 h-1", {
-                  "bg-green-500": data.some(
-                    (sc) =>
-                      (sc.losing_score === a && sc.winning_score === b) ||
-                      (sc.losing_score === b && sc.winning_score === a)
-                  ),
-                })}
-              ></td>
+    <div className="overflow-scroll max-h-[75vh]">
+      <table className="">
+        <tbody>
+          <tr>
+            <td></td>
+            {range(1, maxSize + 1).map((a) => (
+              <td key={a} className="text-xs sticky top-0">
+                {a}
+              </td>
             ))}
           </tr>
-        ))}
-      </tbody>
-    </table>
+          {range(1, maxSize + 1).map((a) => (
+            <tr key={`${a}-row`}>
+              <td className="text-xs">{a}</td>
+              {range(1, a + 1).map((b) => (
+                <td
+                  key={`${a}-${b}-col`}
+                  className={cn("min-w-3 h-3 aspect-square", {
+                    "bg-green-500": data.some(
+                      (sc) =>
+                        (sc.losing_score === a && sc.winning_score === b) ||
+                        (sc.losing_score === b && sc.winning_score === a)
+                    ),
+                  })}
+                ></td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function MostCommonScores({ data }: { data: Datum[] }) {
+  const columns: ColumnDef<Datum>[] = [
+    {
+      header: "Count",
+      accessorFn: (d) => d.count,
+    },
+    {
+      header: "Score",
+      accessorFn: (d) => `${d.winning_score} - ${d.losing_score}`,
+    },
+    {
+      header: "First",
+      accessorFn: (d) => d.first,
+      cell: (c) => (
+        <a
+          href={`https://www.thebluealliance.com/team/${
+            c.getValue<MatchInfo>().key
+          }`}
+        >
+          {c.getValue<MatchInfo>().key} (
+          {timeSince(c.getValue<MatchInfo>().actual_time ?? 0)})
+        </a>
+      ),
+    },
+    {
+      header: "Last",
+      accessorFn: (d) => d.last,
+      cell: (c) => (
+        <a
+          href={`https://www.thebluealliance.com/team/${
+            c.getValue<MatchInfo>().key
+          }`}
+        >
+          {c.getValue<MatchInfo>().key} (
+          {timeSince(c.getValue<MatchInfo>().actual_time ?? 0)})
+        </a>
+      ),
+    },
+  ];
+
+  return (
+    <DataTable
+      columns={columns}
+      data={data.toSorted((a, b) => b.count - a.count)}
+    />
   );
 }

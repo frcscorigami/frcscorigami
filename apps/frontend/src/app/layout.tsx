@@ -15,7 +15,7 @@ export default function RootLayout({
     <html lang="en">
       <body className="">
         <QueryClientProvider client={queryClient}>
-          {children}
+          <div className="container mx-auto">{children}</div>
         </QueryClientProvider>
       </body>
     </html>

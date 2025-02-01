@@ -40,12 +40,17 @@ def match_sorter(match, event):
     return int(end_date_noon.timestamp())
 
 
+class MatchResponseObj(TypedDict):
+    key: str
+    actual_time: int
+
+
 class ScorigamiResponseObj(TypedDict):
     winning_score: int
     losing_score: int
     count: int
-    first: str
-    last: str
+    first: MatchResponseObj
+    last: MatchResponseObj
 
 
 @dataclass
@@ -65,8 +70,14 @@ class ScorigamiOrganizer:
             winning_score=self.winning_score,
             losing_score=self.losing_score,
             count=len(self.match_events),
-            first=self.match_events[0].match["key"],
-            last=self.match_events[-1].match["key"],
+            first=MatchResponseObj(
+                key=self.match_events[0].match["key"],
+                actual_time=self.match_events[0].match["actual_time"],
+            ),
+            last=MatchResponseObj(
+                key=self.match_events[-1].match["key"],
+                actual_time=self.match_events[-1].match["actual_time"],
+            ),
         )
 
     def sort_matches(self) -> None:
