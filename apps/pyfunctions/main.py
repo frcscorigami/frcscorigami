@@ -3,12 +3,15 @@ import logging
 import os
 from dataclasses import dataclass
 from datetime import datetime
-from typing import TypedDict
+from typing import List, Literal, TypedDict
 
 import functions_framework
 import pytz
 from google.cloud import secretmanager, storage
 from tbapy import TBA
+import gzip
+from flask import Response
+import io
 
 _api_key = None
 
@@ -43,6 +46,9 @@ def match_sorter(match, event):
 class MatchResponseObj(TypedDict):
     key: str
     actual_time: int
+    winning_alliance: List[int]
+    losing_alliance: List[int]
+    winning_color: Literal["red", "blue"]
 
 
 class ScorigamiResponseObj(TypedDict):
@@ -50,7 +56,7 @@ class ScorigamiResponseObj(TypedDict):
     losing_score: int
     count: int
     first: MatchResponseObj
-    last: MatchResponseObj
+    # last: MatchResponseObj
 
 
 @dataclass
@@ -66,6 +72,31 @@ class ScorigamiOrganizer:
     match_events: list[MatchEvent]
 
     def to_dict(self) -> ScorigamiResponseObj:
+        def get_winners_losers(index: int):
+            winning_color = self.match_events[index].match["winning_alliance"]
+            if winning_color == "":
+                winning_color = "red"
+            losing_color = "blue" if winning_color == "red" else "red"
+
+            return (
+                winning_color,
+                [
+                    int(k[3:])
+                    for k in self.match_events[index].match["alliances"][winning_color][
+                        "team_keys"
+                    ]
+                ],
+                [
+                    int(k[3:])
+                    for k in self.match_events[index].match["alliances"][losing_color][
+                        "team_keys"
+                    ]
+                ],
+            )
+
+        first_winning_color, first_winners, first_losers = get_winners_losers(0)
+        last_winning_color, last_winners, last_losers = get_winners_losers(-1)
+
         return ScorigamiResponseObj(
             winning_score=self.winning_score,
             losing_score=self.losing_score,
@@ -73,11 +104,17 @@ class ScorigamiOrganizer:
             first=MatchResponseObj(
                 key=self.match_events[0].match["key"],
                 actual_time=self.match_events[0].match["actual_time"],
+                winning_alliance=first_winners,
+                losing_alliance=first_losers,
+                winning_color=first_winning_color,
             ),
-            last=MatchResponseObj(
-                key=self.match_events[-1].match["key"],
-                actual_time=self.match_events[-1].match["actual_time"],
-            ),
+            # last=MatchResponseObj(
+            #     key=self.match_events[-1].match["key"],
+            #     actual_time=self.match_events[-1].match["actual_time"],
+            #     winning_alliance=last_winners,
+            #     losing_alliance=last_losers,
+            #     winning_color=last_winning_color,
+            # ),
         )
 
     def sort_matches(self) -> None:
@@ -192,6 +229,9 @@ def get(request):
         "Access-Control-Allow-Origin": "*",
         "Access-Control-Allow-Methods": "GET",
         "Content-Type": "application/json",
+        "Content-Encoding": "gzip",
     }
 
-    return (data, 200, headers)
+    compressed_data = gzip.compress(json.dumps(data).encode("utf-8"))
+
+    return Response(io.BytesIO(compressed_data), status=200, headers=headers)

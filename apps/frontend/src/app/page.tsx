@@ -20,7 +20,6 @@ export interface ApiResponse {
 export interface Datum {
   count: number;
   first: MatchInfo;
-  last: MatchInfo;
   losing_score: number;
   winning_score: number;
 }
@@ -28,6 +27,9 @@ export interface Datum {
 export interface MatchInfo {
   actual_time: number | null;
   key: string;
+  losing_alliance: number[];
+  winning_alliance: number[];
+  winning_color: "red" | "blue";
 }
 
 const BASE_API_URL =
@@ -76,14 +78,32 @@ export default function Home() {
       {error && <p>Error: {error.message}</p>}
 
       {data && <ScorigamiTable data={data.data} />}
+
       {data && (
-        <div className="md:max-w-[50%]">
-          <div className="text-3xl font-bold text-gray-700">
-            Most Common Scores
+        <div className="flex flex-row gap-4 mt-4 [&>div]:basis-1/2">
+          <div className="md:max-w-[50%]">
+            <div className="text-3xl font-bold text-gray-700">
+              Most Recent Scorigamis
+            </div>
+            <MostRecentScorigamis
+              data={data.data.toSorted(
+                (a, b) =>
+                  (b.first.actual_time ?? 0) - (a.first.actual_time ?? 0)
+              )}
+            />
           </div>
-          <MostCommonScores data={data.data} />
+
+          <div className="md:max-w-[50%]">
+            <div className="text-3xl font-bold text-gray-700">
+              Most Common Scores
+            </div>
+            <MostCommonScores
+              data={data.data.toSorted((a, b) => b.count - a.count)}
+            />
+          </div>
         </div>
       )}
+
       {data && <pre>{JSON.stringify(data, null, 2)}</pre>}
     </div>
   );
@@ -120,7 +140,7 @@ function ScorigamiTable({ data }: { data: Datum[] }) {
           {range(0, maxRows + 1).map((a) => (
             <tr key={`${a}-row`} className="hover:bg-gray-400">
               <td className="text-xs sticky left-0 bg-black text-white">{a}</td>
-              {range(1, Math.min(a + 1, maxCols)).map((b) => (
+              {range(0, Math.min(a + 1, maxCols)).map((b) => (
                 <td
                   key={`${a}-${b}-col`}
                   className={cn("min-w-3 h-3 aspect-square", {
@@ -155,29 +175,35 @@ function MostCommonScores({ data }: { data: Datum[] }) {
     },
     {
       header: "First",
-      accessorFn: (d) => d.first,
       cell: (c) => (
-        <a
-          href={`https://www.thebluealliance.com/team/${
-            c.getValue<MatchInfo>().key
-          }`}
-        >
-          {c.getValue<MatchInfo>().key} (
-          {timeSince(c.getValue<MatchInfo>().actual_time ?? 0)})
-        </a>
+        <div className="flex flex-col">
+          <div
+            className={cn("", {
+              "text-red-500": c.row.original.first.winning_color === "red",
+              "text-blue-500": c.row.original.first.winning_color === "blue",
+            })}
+          >
+            {c.row.original.first.winning_alliance.join("-")}
+          </div>
+          <div
+            className={cn("", {
+              "text-red-500": c.row.original.first.winning_color === "blue",
+              "text-blue-500": c.row.original.first.winning_color === "red",
+            })}
+          >
+            {c.row.original.first.losing_alliance.join("-")}
+          </div>
+        </div>
       ),
     },
     {
-      header: "Last",
-      accessorFn: (d) => d.last,
+      header: "First Match",
       cell: (c) => (
         <a
-          href={`https://www.thebluealliance.com/team/${
-            c.getValue<MatchInfo>().key
-          }`}
+          href={`https://www.thebluealliance.com/match/${c.row.original.first.key}`}
+          className="text-gray-600 underline"
         >
-          {c.getValue<MatchInfo>().key} (
-          {timeSince(c.getValue<MatchInfo>().actual_time ?? 0)})
+          {c.row.original.first.key}
         </a>
       ),
     },
@@ -186,7 +212,57 @@ function MostCommonScores({ data }: { data: Datum[] }) {
   return (
     <DataTable
       columns={columns}
-      data={data.toSorted((a, b) => b.count - a.count)}
+      // data={data.toSorted((a, b) => b.count - a.count)}
+      data={data}
     />
   );
+}
+
+function MostRecentScorigamis({ data }: { data: Datum[] }) {
+  const columns: ColumnDef<Datum>[] = [
+    {
+      header: "Score",
+      accessorFn: (d) => `${d.winning_score} - ${d.losing_score}`,
+    },
+    {
+      header: "When",
+      accessorFn: (d) => timeSince(d.first.actual_time ?? 0),
+    },
+    {
+      header: "Who",
+      cell: (c) => (
+        <div className="flex flex-col">
+          <div
+            className={cn("", {
+              "text-red-500": c.row.original.first.winning_color === "red",
+              "text-blue-500": c.row.original.first.winning_color === "blue",
+            })}
+          >
+            {c.row.original.first.winning_alliance.join("-")}
+          </div>
+          <div
+            className={cn("", {
+              "text-red-500": c.row.original.first.winning_color === "blue",
+              "text-blue-500": c.row.original.first.winning_color === "red",
+            })}
+          >
+            {c.row.original.first.losing_alliance.join("-")}
+          </div>
+        </div>
+      ),
+    },
+    {
+      header: "Match",
+      cell: (c) => (
+        <a
+          href={`https://www.thebluealliance.com/match/${c.row.original.first.key}`}
+          className="text-gray-600 underline"
+        >
+          {c.row.original.first.key}
+        </a>
+      ),
+    },
+  ];
+
+  return <DataTable columns={columns} data={data} />;
 }

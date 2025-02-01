@@ -30,12 +30,6 @@ export function DataTable<TData, TValue>({
     columns,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
-    state: {
-      pagination: {
-        pageSize: 10,
-        pageIndex: 0,
-      },
-    },
   });
 
   return (
@@ -102,7 +96,10 @@ export function DataTable<TData, TValue>({
         <Button
           variant="outline"
           size="sm"
-          onClick={() => table.nextPage()}
+          onClick={(e) => {
+            console.log('CLICKED ', e);
+            return table.nextPage();
+          }}
           disabled={!table.getCanNextPage()}
         >
           Next
