@@ -230,6 +230,7 @@ def get(request):
         "Access-Control-Allow-Methods": "GET",
         "Content-Type": "application/json",
         "Content-Encoding": "gzip",
+        "Cache-Control": "public, max-age=600",
     }
 
     compressed_data = gzip.compress(json.dumps(data).encode("utf-8"))

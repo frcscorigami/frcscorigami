@@ -13,6 +13,8 @@ import { useQuery } from "@tanstack/react-query";
 import { ColumnDef } from "@tanstack/react-table";
 import { PacmanLoader } from "react-spinners";
 import { useMemo, useState } from "react";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 
 export interface ApiResponse {
   data: Datum[];
@@ -60,20 +62,33 @@ export default function Home() {
     queryFn: () => fetchData(year),
   });
 
+  const [enableHeatmap, setEnableHeatmap] = useState(false);
+
   return (
     <div className="">
-      <Select onValueChange={(value) => setYear(Number(value))}>
-        <SelectTrigger className="w-1/4">
-          <SelectValue placeholder={DEFAULT_YEAR.toString()} />
-        </SelectTrigger>
-        <SelectContent>
-          {YEARS.toReversed().map((year) => (
-            <SelectItem key={year} value={year.toString()}>
-              {year}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+      <div className="flex flex-row justify-center gap-6 items-center">
+        <Select onValueChange={(value) => setYear(Number(value))}>
+          <SelectTrigger className="w-auto">
+            <SelectValue placeholder={DEFAULT_YEAR.toString()} />
+          </SelectTrigger>
+          <SelectContent>
+            {YEARS.toReversed().map((year) => (
+              <SelectItem key={year} value={year.toString()}>
+                {year}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        <div className="flex flex-row items-center gap-2">
+          <Switch
+            id="heatmap-mode"
+            onCheckedChange={setEnableHeatmap}
+            checked={enableHeatmap}
+          />
+          <Label htmlFor="heatmap-mode">Heatmap Mode</Label>
+        </div>
+      </div>
 
       {isLoading && (
         <div className="flex justify-center min-h-[90vh] items-center">
@@ -82,7 +97,9 @@ export default function Home() {
       )}
       {error && <p>Error: {error.message}</p>}
 
-      {data && <ScorigamiTable data={data.data} />}
+      {data && (
+        <ScorigamiTable data={data.data} enableHeatmap={enableHeatmap} />
+      )}
 
       {data && (
         <div className="flex flex-row flex-wrap md:flex-nowrap gap-4 mt-4 [&>div]:basis-1/2 justify-center">
@@ -112,7 +129,13 @@ export default function Home() {
   );
 }
 
-function ScorigamiTable({ data }: { data: Datum[] }) {
+function ScorigamiTable({
+  data,
+  enableHeatmap,
+}: {
+  data: Datum[];
+  enableHeatmap: boolean;
+}) {
   const maxCols = useMemo(
     () =>
       data.reduce((max, { losing_score }) => Math.max(max, losing_score), 0),
@@ -122,6 +145,11 @@ function ScorigamiTable({ data }: { data: Datum[] }) {
   const maxRows = useMemo(
     () =>
       data.reduce((max, { winning_score }) => Math.max(max, winning_score), 0),
+    [data]
+  );
+
+  const maxCount = useMemo(
+    () => data.reduce((max, { count }) => Math.max(max, count), 0),
     [data]
   );
 
@@ -143,18 +171,52 @@ function ScorigamiTable({ data }: { data: Datum[] }) {
           {range(0, maxRows + 1).map((a) => (
             <tr key={`${a}-row`} className="hover:bg-gray-400">
               <td className="text-xs sticky left-0 bg-black text-white">{a}</td>
-              {range(0, Math.min(a + 1, maxCols)).map((b) => (
-                <td
-                  key={`${a}-${b}-col`}
-                  className={cn("min-w-3 h-3 aspect-square", {
-                    "bg-green-500/75": data.some(
-                      (sc) =>
-                        (sc.losing_score === a && sc.winning_score === b) ||
-                        (sc.losing_score === b && sc.winning_score === a)
-                    ),
-                  })}
-                ></td>
-              ))}
+              {range(0, Math.min(a + 1, maxCols)).map((b) => {
+                const baseClasses = "min-w-3 h-3 aspect-square";
+
+                const hasScorigami = data.find(
+                  (sc) =>
+                    (sc.losing_score === a && sc.winning_score === b) ||
+                    (sc.losing_score === b && sc.winning_score === a)
+                );
+
+                if (hasScorigami === undefined) {
+                  return (
+                    <td key={`${a}-${b}-col`} className={baseClasses}></td>
+                  );
+                }
+
+                if (!enableHeatmap) {
+                  return (
+                    <td
+                      key={`${a}-${b}-col`}
+                      className={cn(baseClasses, {
+                        "bg-green-500": hasScorigami.count > 0,
+                      })}
+                    ></td>
+                  );
+                }
+
+                const heatmapPct = hasScorigami.count / maxCount;
+
+                return (
+                  <td
+                    key={`${a}-${b}-col`}
+                    className={cn("min-w-3 h-3 aspect-square", {
+                      "bg-green-100/70": 0 < heatmapPct && heatmapPct <= 0.1,
+                      "bg-green-200/70": 0.1 < heatmapPct && heatmapPct <= 0.2,
+                      "bg-green-300/70": 0.2 < heatmapPct && heatmapPct <= 0.3,
+                      "bg-green-400/70": 0.3 < heatmapPct && heatmapPct <= 0.4,
+                      "bg-green-500/70": 0.4 < heatmapPct && heatmapPct <= 0.5,
+                      "bg-green-600/70": 0.5 < heatmapPct && heatmapPct <= 0.6,
+                      "bg-green-700/70": 0.6 < heatmapPct && heatmapPct <= 0.7,
+                      "bg-green-800/70": 0.7 < heatmapPct && heatmapPct <= 0.8,
+                      "bg-green-900/70": 0.8 < heatmapPct && heatmapPct <= 0.9,
+                      "bg-green-950/70": 0.9 < heatmapPct && heatmapPct <= 1,
+                    })}
+                  ></td>
+                );
+              })}
               {range(a + 2, maxCols + 1).map((b) => (
                 <td key={`${a}-${b}-col`}></td>
               ))}
