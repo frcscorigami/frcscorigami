@@ -195,7 +195,7 @@ function ScorigamiTable({
                     <td
                       key={`${a}-${b}-col`}
                       className={cn(baseClasses, {
-                        "bg-green-500": hasScorigami.count > 0,
+                        "bg-green-500/80": hasScorigami.count > 0,
                       })}
                     ></td>
                   );
@@ -207,16 +207,16 @@ function ScorigamiTable({
                   <td
                     key={`${a}-${b}-col`}
                     className={cn("min-w-3 h-3 aspect-square", {
-                      "bg-green-100/70": 0 < heatmapPct && heatmapPct <= 0.1,
-                      "bg-green-200/70": 0.1 < heatmapPct && heatmapPct <= 0.2,
-                      "bg-green-300/70": 0.2 < heatmapPct && heatmapPct <= 0.3,
-                      "bg-green-400/70": 0.3 < heatmapPct && heatmapPct <= 0.4,
-                      "bg-green-500/70": 0.4 < heatmapPct && heatmapPct <= 0.5,
-                      "bg-green-600/70": 0.5 < heatmapPct && heatmapPct <= 0.6,
-                      "bg-green-700/70": 0.6 < heatmapPct && heatmapPct <= 0.7,
-                      "bg-green-800/70": 0.7 < heatmapPct && heatmapPct <= 0.8,
-                      "bg-green-900/70": 0.8 < heatmapPct && heatmapPct <= 0.9,
-                      "bg-green-950/70": 0.9 < heatmapPct && heatmapPct <= 1,
+                      "bg-green-100/80": 0 < heatmapPct && heatmapPct <= 0.1,
+                      "bg-green-200/80": 0.1 < heatmapPct && heatmapPct <= 0.2,
+                      "bg-green-300/80": 0.2 < heatmapPct && heatmapPct <= 0.3,
+                      "bg-green-400/80": 0.3 < heatmapPct && heatmapPct <= 0.4,
+                      "bg-green-500/80": 0.4 < heatmapPct && heatmapPct <= 0.5,
+                      "bg-green-600/80": 0.5 < heatmapPct && heatmapPct <= 0.6,
+                      "bg-green-700/80": 0.6 < heatmapPct && heatmapPct <= 0.7,
+                      "bg-green-800/80": 0.7 < heatmapPct && heatmapPct <= 0.8,
+                      "bg-green-900/80": 0.8 < heatmapPct && heatmapPct <= 0.9,
+                      "bg-green-950/80": 0.9 < heatmapPct && heatmapPct <= 1,
                     })}
                   ></td>
                 );
