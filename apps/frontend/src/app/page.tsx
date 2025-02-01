@@ -77,7 +77,10 @@ export default function Home() {
 
       {data && <ScorigamiTable data={data.data} />}
       {data && (
-        <div className="max-w-[50%]">
+        <div className="md:max-w-[50%]">
+          <div className="text-3xl font-bold text-gray-700">
+            Most Common Scores
+          </div>
           <MostCommonScores data={data.data} />
         </div>
       )}
@@ -93,32 +96,48 @@ function ScorigamiTable({ data }: { data: Datum[] }) {
     [data]
   );
 
+  const minSize = useMemo(
+    () =>
+      data
+        .filter((d) => d.losing_score >= 0)
+        .reduce((min, { losing_score }) => Math.min(min, losing_score), 999),
+    [data]
+  );
+
+  console.log({ minSize });
+
   return (
     <div className="overflow-scroll max-h-[75vh]">
       <table className="">
         <tbody>
           <tr>
             <td></td>
-            {range(1, maxSize + 1).map((a) => (
-              <td key={a} className="text-xs sticky top-0">
+            {range(0, maxSize + 1).map((a) => (
+              <td
+                key={a}
+                className="text-xs sticky top-0 group bg-black text-white"
+              >
                 {a}
               </td>
             ))}
           </tr>
-          {range(1, maxSize + 1).map((a) => (
-            <tr key={`${a}-row`}>
-              <td className="text-xs">{a}</td>
+          {range(0, maxSize + 1).map((a) => (
+            <tr key={`${a}-row`} className="hover:bg-gray-400">
+              <td className="text-xs sticky left-0 bg-black text-white">{a}</td>
               {range(1, a + 1).map((b) => (
                 <td
                   key={`${a}-${b}-col`}
                   className={cn("min-w-3 h-3 aspect-square", {
-                    "bg-green-500": data.some(
+                    "bg-green-500/75": data.some(
                       (sc) =>
                         (sc.losing_score === a && sc.winning_score === b) ||
                         (sc.losing_score === b && sc.winning_score === a)
                     ),
                   })}
                 ></td>
+              ))}
+              {range(a + 2, maxSize + 1).map((b) => (
+                <td key={`${a}-${b}-col`}></td>
               ))}
             </tr>
           ))}

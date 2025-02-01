@@ -3,6 +3,13 @@
 import "@/app/globals.css";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useState } from "react";
+import { Inter } from "next/font/google";
+import { cn } from "@/lib/utils";
+
+const font = Inter({
+  subsets: ["latin"],
+  display: "swap",
+});
 
 export default function RootLayout({
   children,
@@ -15,7 +22,9 @@ export default function RootLayout({
     <html lang="en">
       <body className="">
         <QueryClientProvider client={queryClient}>
-          <div className="container mx-auto">{children}</div>
+          <div className={cn("container mx-auto", font.className)}>
+            {children}
+          </div>
         </QueryClientProvider>
       </body>
     </html>
