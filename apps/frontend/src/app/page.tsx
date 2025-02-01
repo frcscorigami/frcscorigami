@@ -90,21 +90,17 @@ export default function Home() {
 }
 
 function ScorigamiTable({ data }: { data: Datum[] }) {
-  const maxSize = useMemo(
+  const maxCols = useMemo(
+    () =>
+      data.reduce((max, { losing_score }) => Math.max(max, losing_score), 0),
+    [data]
+  );
+
+  const maxRows = useMemo(
     () =>
       data.reduce((max, { winning_score }) => Math.max(max, winning_score), 0),
     [data]
   );
-
-  const minSize = useMemo(
-    () =>
-      data
-        .filter((d) => d.losing_score >= 0)
-        .reduce((min, { losing_score }) => Math.min(min, losing_score), 999),
-    [data]
-  );
-
-  console.log({ minSize });
 
   return (
     <div className="overflow-scroll max-h-[75vh]">
@@ -112,7 +108,7 @@ function ScorigamiTable({ data }: { data: Datum[] }) {
         <tbody>
           <tr>
             <td></td>
-            {range(0, maxSize + 1).map((a) => (
+            {range(0, maxCols + 1).map((a) => (
               <td
                 key={a}
                 className="text-xs sticky top-0 group bg-black text-white"
@@ -121,10 +117,10 @@ function ScorigamiTable({ data }: { data: Datum[] }) {
               </td>
             ))}
           </tr>
-          {range(0, maxSize + 1).map((a) => (
+          {range(0, maxRows + 1).map((a) => (
             <tr key={`${a}-row`} className="hover:bg-gray-400">
               <td className="text-xs sticky left-0 bg-black text-white">{a}</td>
-              {range(1, a + 1).map((b) => (
+              {range(1, Math.min(a + 1, maxCols)).map((b) => (
                 <td
                   key={`${a}-${b}-col`}
                   className={cn("min-w-3 h-3 aspect-square", {
@@ -136,7 +132,7 @@ function ScorigamiTable({ data }: { data: Datum[] }) {
                   })}
                 ></td>
               ))}
-              {range(a + 2, maxSize + 1).map((b) => (
+              {range(a + 2, maxCols + 1).map((b) => (
                 <td key={`${a}-${b}-col`}></td>
               ))}
             </tr>
