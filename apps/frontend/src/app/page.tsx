@@ -66,7 +66,11 @@ export default function Home() {
 
   return (
     <div className="">
-      <div className="flex flex-row justify-center gap-6 items-center">
+      <div className="text-5xl font-bold text-gray-700 text-center my-4">
+        FRC Scorigami
+      </div>
+
+      <div className="flex flex-row justify-center gap-6 items-center mb-4">
         <Select onValueChange={(value) => setYear(Number(value))}>
           <SelectTrigger className="w-auto">
             <SelectValue placeholder={DEFAULT_YEAR.toString()} />
