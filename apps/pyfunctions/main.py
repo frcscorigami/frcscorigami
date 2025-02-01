@@ -224,13 +224,15 @@ def get(request):
     blob = bucket.blob(f"scorigami_{year}.json")
     data = json.loads(blob.download_as_string())
 
+    cache_time = "600" if year == 2024 else str(60 * 60 * 24 * 7)
+
     # Add CORS headers and return data
     headers = {
         "Access-Control-Allow-Origin": "*",
         "Access-Control-Allow-Methods": "GET",
         "Content-Type": "application/json",
         "Content-Encoding": "gzip",
-        "Cache-Control": "public, max-age=600",
+        "Cache-Control": f"public, max-age={cache_time}",
     }
 
     compressed_data = gzip.compress(json.dumps(data).encode("utf-8"))
