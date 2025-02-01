@@ -77,7 +77,7 @@ export default function Home() {
 
       {isLoading && (
         <div className="flex justify-center min-h-[90vh] items-center">
-          <PacmanLoader color="#fdff00" speedMultiplier={2} />
+          <PacmanLoader speedMultiplier={2} />
         </div>
       )}
       {error && <p>Error: {error.message}</p>}
