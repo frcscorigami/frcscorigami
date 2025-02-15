@@ -12,9 +12,11 @@ import { cn, range, timeSince } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import { ColumnDef } from "@tanstack/react-table";
 import { PacmanLoader } from "react-spinners";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
+import { AlertCircle } from "lucide-react";
 
 export interface ApiResponse {
   data: Datum[];
@@ -129,6 +131,14 @@ export default function Home() {
           </div>
         </div>
       )}
+
+      <Alert variant="default" className="mb-12 max-w-[600px]">
+        <AlertCircle className="h-4 w-4" />
+        <AlertTitle>Data updates every 10 minutes.</AlertTitle>
+        <AlertDescription>
+          <MinutesUntilNextInterval /> minutes until the next update. You'll need to refresh to see it.
+        </AlertDescription>
+      </Alert>
     </div>
   );
 }
@@ -334,4 +344,27 @@ function MostRecentScorigamis({ data }: { data: Datum[] }) {
   ];
 
   return <DataTable columns={columns} data={data} />;
+}
+
+const getMinutesUntilNextInterval = () => {
+  const now = new Date();
+  const currentMinutes = now.getMinutes();
+  const nextIntervals = [0, 10, 20, 30, 40, 50];
+
+  const nextMinute =
+    nextIntervals.find((m) => m > currentMinutes) ?? nextIntervals[0] + 60;
+  return nextMinute - currentMinutes;
+};
+
+function MinutesUntilNextInterval() {
+  const [minutesLeft, setMinutesLeft] = useState(getMinutesUntilNextInterval());
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setMinutesLeft(getMinutesUntilNextInterval());
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  return <>{minutesLeft}</>;
 }
