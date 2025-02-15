@@ -144,11 +144,23 @@ def generate_scorigami_data(tba_key: str, year: int):
     logging.info("Processing events")
     for event in events:
         logging.info(f"Processing event {event['key']}")
-        if event["event_type"] in [99, 100, -1]:
+        if event["event_type"] in [99, 100, -1] and event["key"] != "2025week0":
             logging.info(f"Skipping {event['key']}")
             continue
 
-        matches = tba.event_matches(event["key"], simple=True)
+        start_date = datetime.strptime(event["start_date"], "%Y-%m-%d")
+        today = datetime.today()
+
+        if start_date > today:
+            logging.info(f"Skipping {event['key']}")
+            continue
+
+        try:
+            matches = tba.event_matches(event["key"], simple=True)
+        except ValueError:
+            logging.info(f"Skipping {event['key']}")
+            continue
+
         for match in matches:
             if match["winning_alliance"] == "" or match["winning_alliance"] is None:
                 match["winning_alliance"] = "red"
@@ -158,6 +170,9 @@ def generate_scorigami_data(tba_key: str, year: int):
             losing_score = match["alliances"][
                 OPPOSITE_COLOR[match["winning_alliance"]]
             ]["score"]
+
+            if winning_score == -1 or losing_score == -1:
+                continue
 
             if (winning_score, losing_score) not in scorigamis:
                 scorigamis[(winning_score, losing_score)] = ScorigamiOrganizer(
@@ -224,7 +239,7 @@ def get(request):
     blob = bucket.blob(f"scorigami_{year}.json")
     data = json.loads(blob.download_as_string())
 
-    cache_time = "600" if year == 2024 else str(60 * 60 * 24 * 7)
+    cache_time = "600" if year == 2025 else str(60 * 60 * 24 * 7)
 
     # Add CORS headers and return data
     headers = {
