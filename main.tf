@@ -126,7 +126,7 @@ resource "google_storage_bucket_iam_member" "update_function_access" {
 # Create scheduler job for update function
 resource "google_cloud_scheduler_job" "update_job" {
   name      = "update-scorigami-data"
-  schedule  = "0/10 7-19 * * 6"
+  schedule  = "0,10,20,30,40,50 7-19 * * 6"
   region    = "us-central1"
   time_zone = "America/New_York"
 
