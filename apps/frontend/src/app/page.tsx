@@ -136,7 +136,8 @@ export default function Home() {
         <AlertCircle className="h-4 w-4" />
         <AlertTitle>Data updates every 10 minutes.</AlertTitle>
         <AlertDescription>
-          <MinutesUntilNextInterval /> minutes until the next update. You'll need to refresh to see it.
+          <MinutesUntilNextInterval /> minutes until the next update.
+          You&apos;ll need to refresh to see it.
         </AlertDescription>
       </Alert>
     </div>
