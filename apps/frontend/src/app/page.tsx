@@ -44,7 +44,7 @@ const YEARS = [
   2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2022, 2023, 2024, 2025,
 ];
 
-const DEFAULT_YEAR = 2024;
+const DEFAULT_YEAR = 2025;
 
 async function fetchData(year: number): Promise<ApiResponse> {
   const response = await fetch(`${BASE_API_URL}/${year}`);
