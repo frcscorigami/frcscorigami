@@ -125,13 +125,14 @@ resource "google_storage_bucket_iam_member" "update_function_access" {
 
 # Create scheduler job for update function
 resource "google_cloud_scheduler_job" "update_job" {
-  name     = "update-scorigami-data"
-  schedule = "0 12 * * *"
-  region   = "us-central1"
+  name      = "update-scorigami-data"
+  schedule  = "0/10 7-19 * * 6"
+  region    = "us-central1"
+  time_zone = "America/New_York"
 
   http_target {
     http_method = "GET"
-    uri         = "${google_cloudfunctions2_function.function["function-update"].service_config[0].uri}/2024"
+    uri         = "${google_cloudfunctions2_function.function["function-update"].service_config[0].uri}/2025"
 
     oidc_token {
       service_account_email = google_cloudfunctions2_function.function["function-update"].service_config[0].service_account_email
