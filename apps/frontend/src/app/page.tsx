@@ -18,6 +18,7 @@ import { Label } from "@/components/ui/label";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
 import Head from "next/head";
+import Script from "next/script";
 
 export interface ApiResponse {
   data: Datum[];
@@ -68,12 +69,12 @@ export default function Home() {
     <div className="">
       <Head>
         <title>FRC Scorigami - {year}</title>
-        <script
-          defer
-          src="https://um.reca.lc/script.js"
-          data-website-id="6ce34b0f-2b63-48f2-9ddb-c7ea69bf85a5"
-        ></script>
       </Head>
+      <Script
+        defer
+        src="https://um.reca.lc/script.js"
+        data-website-id="6ce34b0f-2b63-48f2-9ddb-c7ea69bf85a5"
+      />
       <div className="text-5xl font-bold text-gray-700 text-center my-4">
         FRC Scorigami
       </div>
