@@ -144,7 +144,7 @@ def generate_scorigami_data(tba_key: str, year: int):
     logging.info("Processing events")
     for event in events:
         logging.info(f"Processing event {event['key']}")
-        if event["event_type"] in [99, 100, -1] and event["key"] != "2025week0":
+        if event["event_type"] in [99, 100, -1]:  # and event["key"] != "2025week0":
             logging.info(f"Skipping {event['key']}")
             continue
 
