@@ -183,7 +183,7 @@ function ScorigamiTable({
           {range(0, maxRows + 1).map((a) => (
             <tr key={`${a}-row`} className="hover:bg-gray-400">
               <td className="text-xs sticky left-0 bg-black text-white">{a}</td>
-              {range(0, Math.min(a + 1, maxCols)).map((b) => {
+              {range(0, Math.min(a + 1, maxCols + 1)).map((b) => {
                 const baseClasses = "min-w-3 h-3 aspect-square";
 
                 const hasScorigami = data.find(
