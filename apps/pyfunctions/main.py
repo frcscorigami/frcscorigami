@@ -27,7 +27,19 @@ logging.getLogger().setLevel(logging.INFO)
 
 def match_sorter(match, event):
     if match["actual_time"] is not None:
-        return match["actual_time"]
+        return (
+            match["actual_time"],
+            event.get("week", 10),
+            {
+                "qm": 0,
+                "ef": 1,
+                "qf": 2,
+                "sf": 3,
+                "f": 4,
+            }[match["comp_level"]],
+            match["set_number"],
+            match["match_number"],
+        )
 
     # Parse event's end_date and timezone
     end_date = datetime.strptime(event["end_date"], "%Y-%m-%d")
@@ -40,7 +52,19 @@ def match_sorter(match, event):
     end_date_noon = local_tz.localize(
         end_date.replace(hour=12, minute=0, second=0, microsecond=0)
     )
-    return int(end_date_noon.timestamp())
+    return (
+        int(end_date_noon.timestamp()),
+        event.get("week", 10),
+        {
+            "qm": 0,
+            "ef": 1,
+            "qf": 2,
+            "sf": 3,
+            "f": 4,
+        }[match["comp_level"]],
+        match["set_number"],
+        match["match_number"],
+    )
 
 
 class MatchResponseObj(TypedDict):
@@ -198,20 +222,26 @@ def generate_scorigami_data(tba_key: str, year: int):
 @functions_framework.http
 def update(request):
     path = request.path
-    year = int(path.split("/")[-1])
+    year = path.split("/")[-1]
+    years = []
+    if year == "all":
+        years = list(range(2003, 2026))
+    else:
+        years = [int(year)]
 
-    storage_client = storage.Client()
-    bucket = storage_client.bucket(os.environ.get("BUCKET_NAME"))
-    tba_key = get_api_key()
-    data = generate_scorigami_data(tba_key, year)
+    for year in years:
+        storage_client = storage.Client()
+        bucket = storage_client.bucket(os.environ.get("BUCKET_NAME"))
+        tba_key = get_api_key()
+        data = generate_scorigami_data(tba_key, year)
 
-    data = {"last_updated": datetime.now().isoformat(), "data": data}
+        data = {"last_updated": datetime.now().isoformat(), "data": data}
 
-    blob = bucket.blob(f"scorigami_{year}.json")
-    blob.upload_from_string(
-        json.dumps(data, indent=2),
-        content_type="application/json",
-    )
+        blob = bucket.blob(f"scorigami_{year}.json")
+        blob.upload_from_string(
+            json.dumps(data, indent=2),
+            content_type="application/json",
+        )
 
     return {
         "success": True,
