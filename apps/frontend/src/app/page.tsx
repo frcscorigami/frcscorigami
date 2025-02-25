@@ -213,33 +213,100 @@ function ScorigamiTable({
 
                 if (!enableHeatmap) {
                   return (
-                    <td
-                      key={`${a}-${b}-col`}
-                      className={cn(baseClasses, {
-                        "bg-green-500/80": hasScorigami.count > 0,
-                      })}
-                    ></td>
+                    <td className="">
+                      <div className="group relative cursor-pointer">
+                        <div className="min-w-3 h-3 aspect-square bg-green-500/40"></div>
+
+                        <div
+                          className="absolute z-10 invisible group-hover:visible opacity-0 group-hover:opacity-100 
+                                            transition-opacity duration-200 bottom-full left-1/2 transform -translate-x-1/2 mb-2 
+                                            w-48 p-3 bg-gray-800 text-white text-xs rounded-md shadow-lg"
+                        >
+                          <div className="text-center mb-2">
+                            <span className="font-semibold">
+                              Score: {a} - {b}
+                            </span>
+                            <p className="text-gray-300 text-xs mt-1">
+                              Occurred {hasScorigami.count} times
+                            </p>
+                          </div>
+                          <div className="text-center">
+                            <a
+                              href={`https://www.thebluealliance.com/match/${hasScorigami.first.key}`}
+                              className="text-blue-300 hover:text-blue-100 underline text-xs"
+                            >
+                              View match
+                            </a>
+                          </div>
+                          <div
+                            className="absolute top-full left-1/2 transform -translate-x-1/2 
+                                                border-4 border-solid border-transparent border-t-gray-800"
+                          ></div>
+                        </div>
+                      </div>
+                    </td>
                   );
                 }
 
                 const heatmapPct = hasScorigami.count / maxCount;
 
                 return (
-                  <td
-                    key={`${a}-${b}-col`}
-                    className={cn("min-w-3 h-3 aspect-square", {
-                      "bg-green-100/80": 0 < heatmapPct && heatmapPct <= 0.1,
-                      "bg-green-200/80": 0.1 < heatmapPct && heatmapPct <= 0.2,
-                      "bg-green-300/80": 0.2 < heatmapPct && heatmapPct <= 0.3,
-                      "bg-green-400/80": 0.3 < heatmapPct && heatmapPct <= 0.4,
-                      "bg-green-500/80": 0.4 < heatmapPct && heatmapPct <= 0.5,
-                      "bg-green-600/80": 0.5 < heatmapPct && heatmapPct <= 0.6,
-                      "bg-green-700/80": 0.6 < heatmapPct && heatmapPct <= 0.7,
-                      "bg-green-800/80": 0.7 < heatmapPct && heatmapPct <= 0.8,
-                      "bg-green-900/80": 0.8 < heatmapPct && heatmapPct <= 0.9,
-                      "bg-green-950/80": 0.9 < heatmapPct && heatmapPct <= 1,
-                    })}
-                  ></td>
+                  <td className="">
+                    <div className="group relative cursor-pointer">
+                      {/* <div className="min-w-3 h-3 aspect-square bg-green-500/40"></div> */}
+                      <div
+                        className={cn("min-w-3 h-3 aspect-square", {
+                          "bg-green-100/80":
+                            0 < heatmapPct && heatmapPct <= 0.1,
+                          "bg-green-200/80":
+                            0.1 < heatmapPct && heatmapPct <= 0.2,
+                          "bg-green-300/80":
+                            0.2 < heatmapPct && heatmapPct <= 0.3,
+                          "bg-green-400/80":
+                            0.3 < heatmapPct && heatmapPct <= 0.4,
+                          "bg-green-500/80":
+                            0.4 < heatmapPct && heatmapPct <= 0.5,
+                          "bg-green-600/80":
+                            0.5 < heatmapPct && heatmapPct <= 0.6,
+                          "bg-green-700/80":
+                            0.6 < heatmapPct && heatmapPct <= 0.7,
+                          "bg-green-800/80":
+                            0.7 < heatmapPct && heatmapPct <= 0.8,
+                          "bg-green-900/80":
+                            0.8 < heatmapPct && heatmapPct <= 0.9,
+                          "bg-green-950/80":
+                            0.9 < heatmapPct && heatmapPct <= 1,
+                        })}
+                      ></div>
+
+                      <div
+                        className="absolute z-10 invisible group-hover:visible opacity-0 group-hover:opacity-100 
+                                            transition-opacity duration-200 bottom-full left-1/2 transform -translate-x-1/2 mb-2 
+                                            w-48 p-3 bg-gray-800 text-white text-xs rounded-md shadow-lg"
+                      >
+                        <div className="text-center mb-2">
+                          <span className="font-semibold">
+                            Score: {a} - {b}
+                          </span>
+                          <p className="text-gray-300 text-xs mt-1">
+                            Occurred {hasScorigami.count} times
+                          </p>
+                        </div>
+                        <div className="text-center">
+                          <a
+                            href={`https://www.thebluealliance.com/match/${hasScorigami.first.key}`}
+                            className="text-blue-300 hover:text-blue-100 underline text-xs"
+                          >
+                            View match
+                          </a>
+                        </div>
+                        <div
+                          className="absolute top-full left-1/2 transform -translate-x-1/2 
+                                                border-4 border-solid border-transparent border-t-gray-800"
+                        ></div>
+                      </div>
+                    </div>
+                  </td>
                 );
               })}
               {range(a + 2, maxCols + 1).map((b) => (
