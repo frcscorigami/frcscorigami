@@ -213,7 +213,7 @@ function ScorigamiTable({
 
                 if (!enableHeatmap) {
                   return (
-                    <td className="">
+                    <td className="" key={`${a}-${b}-col`}>
                       <div className="group relative cursor-pointer">
                         <div className="min-w-3 h-3 aspect-square bg-green-500/40"></div>
 
@@ -251,7 +251,7 @@ function ScorigamiTable({
                 const heatmapPct = hasScorigami.count / maxCount;
 
                 return (
-                  <td className="">
+                  <td className="" key={`${a}-${b}-col`}>
                     <div className="group relative cursor-pointer">
                       {/* <div className="min-w-3 h-3 aspect-square bg-green-500/40"></div> */}
                       <div
