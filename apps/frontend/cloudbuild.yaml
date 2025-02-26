@@ -1,12 +1,12 @@
 steps:
-  - name: "node:20"
+  - name: "oven/bun:1"
     dir: "apps/frontend"
-    entrypoint: npm
-    args: ["install"]
+    entrypoint: bun
+    args: ["install", "--frozen-lockfile"]
 
-  - name: "node:20"
+  - name: "oven/bun:1"
     dir: "apps/frontend"
-    entrypoint: npm
+    entrypoint: bun
     args: ["run", "build"]
 
   - name: "gcr.io/cloud-builders/docker"
