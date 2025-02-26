@@ -118,38 +118,42 @@ export default function Home() {
       )}
 
       {data && (
-        <div className="flex flex-row flex-wrap md:flex-nowrap gap-4 mt-4 [&>div]:basis-1/2 justify-center">
-          <div className="md:max-w-[50%]">
-            <div className="text-3xl font-bold text-gray-700">
-              Most Recent Scorigamis
+        <div className="container mx-auto">
+          <div className="flex flex-row flex-wrap md:flex-nowrap gap-4 mt-4 [&>div]:basis-1/2 justify-center">
+            <div className="md:max-w-[50%]">
+              <div className="text-3xl font-bold text-gray-700">
+                Most Recent Scorigamis
+              </div>
+              <MostRecentScorigamis
+                data={data.data.toSorted(
+                  (a, b) =>
+                    (b.first.actual_time ?? 0) - (a.first.actual_time ?? 0)
+                )}
+              />
             </div>
-            <MostRecentScorigamis
-              data={data.data.toSorted(
-                (a, b) =>
-                  (b.first.actual_time ?? 0) - (a.first.actual_time ?? 0)
-              )}
-            />
-          </div>
 
-          <div className="md:max-w-[50%]">
-            <div className="text-3xl font-bold text-gray-700">
-              Most Common Scores
+            <div className="md:max-w-[50%]">
+              <div className="text-3xl font-bold text-gray-700">
+                Most Common Scores
+              </div>
+              <MostCommonScores
+                data={data.data.toSorted((a, b) => b.count - a.count)}
+              />
             </div>
-            <MostCommonScores
-              data={data.data.toSorted((a, b) => b.count - a.count)}
-            />
           </div>
         </div>
       )}
 
-      <Alert variant="default" className="mb-12 max-w-[600px]">
-        <AlertCircle className="h-4 w-4" />
-        <AlertTitle>Data updates every 10 minutes.</AlertTitle>
-        <AlertDescription>
-          <MinutesUntilNextInterval /> minutes until the next update.
-          You&apos;ll need to refresh to see it.
-        </AlertDescription>
-      </Alert>
+      {year === 2025 && data && (
+        <Alert variant="default" className="mb-12 max-w-[600px]">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Data updates every 10 minutes.</AlertTitle>
+          <AlertDescription>
+            <MinutesUntilNextInterval /> minutes until the next update.
+            You&apos;ll need to refresh to see it.
+          </AlertDescription>
+        </Alert>
+      )}
     </div>
   );
 }
@@ -179,7 +183,7 @@ function ScorigamiTable({
   );
 
   return (
-    <div className="overflow-scroll max-h-[75vh]">
+    <div className="overflow-scroll max-h-[75vh] max-w-[90vw] mx-auto">
       <table className="">
         <tbody>
           <tr>

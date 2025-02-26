@@ -22,7 +22,7 @@ export default function RootLayout({
     <html lang="en">
       <body className="">
         <QueryClientProvider client={queryClient}>
-          <div className={cn("container mx-auto", font.className)}>
+          <div className={cn("", font.className)}>
             {children}
           </div>
         </QueryClientProvider>
